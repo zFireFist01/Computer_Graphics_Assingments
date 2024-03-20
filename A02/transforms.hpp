@@ -72,7 +72,7 @@ void SetTransform(A02 *A) {
 	A->SetMatrix(7,  M, false);
 	
 	//That's the inverse of the matrix on A02.cpp relatively to this tile of the puzzle
-	M = glm::mat4(-1.01f, 0.0f, -2.02f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 2.02f, 0.0f, 1.01f, 0.0f, 1.0f, 2.0f, 1.0f, 1.0f);
+	M = glm::rotate(glm::translate(glm::scale(glm::shearX3D(glm::shearZ3D(glm::mat4(1.0f), 0.5f, 0.0f), 0.0f, 0.67f), glm::vec3(1.51f, 1.0f, 2.0f)), glm::vec3(0.335f, 2.0f, 0.33f)), glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	//M = glm::shearX3D(glm::mat4(1.0f), -0.67f, 2.f);
 	A->SetMatrix(8,  M, false);
 
