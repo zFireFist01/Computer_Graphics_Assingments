@@ -50,7 +50,7 @@ void SetProjections(A03 *A) {
 	// Ortogonal Front
 	// this is the only one correct, and that should not be modified
 	M = glm::mat4(1.0f / 20.0f,0,0,0,  0,-4.0f / 60.f,0,0,   0,0,1.0f / (0.1f-500.0f),0, 0,0,0.1f / (0.1f-500.0f),1);
-	G = glm::mat4(1.0f / 20.0f,0,0,0,  0,-4.0f / 60.f,0,0,   0,0,1.0f / (0.1f-500.0f),0, 0,0,0.1f / (0.1f-500.0f),1);
+	G = glm::mat4(1.0f / 20.0f,0,0,0,  0,-4.0f / 60.f,0,0,   0,0,1.0f / (-500.0f-500.0f),0, 0,0,0.1f / (-500.0f-500.0f),1);
 	A->SetMatrix(0,  M);
 
 	// Isometric
