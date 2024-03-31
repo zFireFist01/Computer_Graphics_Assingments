@@ -2,7 +2,6 @@
 
 /**************
  Compute the world view and projection matrices, as described below
- 
  WARNING!
  Since it is a C program, you can use for loops and functions if you think they can be helpful in your solution.
  However, please include all your code in this file, since it will be put in an automatic correction process
@@ -27,7 +26,17 @@ glm::mat4 MakeViewProjectionLookInDirection(glm::vec3 Pos, float Yaw, float Pitc
 	//	- Looking direction defined in formal parameter >Yaw<
 	//	- Looking elevation defined in formal parameter >Pitch<
 	//	- Looking rool defined in formal parameter >Roll<
-	glm::mat4 M = glm::mat4(1.0f);
+
+
+	glm::mat4 Mp = glm::perspective(FOVy, Ar, nearPlane, farPlane);
+
+
+	glm::mat4 Mv = glm::rotate(glm::mat4(1.0), -Yaw, glm::vec3(0,0,1)) 
+					* glm::rotate(glm::mat4(1.0), -Pitch, glm::vec3(1,0,0)) 
+					* glm::rotate(glm::mat4(1.0), -Roll, glm::vec3(0,1,0)) 
+					* glm::translate(glm::mat4(1.0), -Pos);
+
+	glm::mat4 M = Mp * Mv;
 
 	return M;
 }
