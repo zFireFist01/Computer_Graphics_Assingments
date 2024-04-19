@@ -30,10 +30,11 @@ glm::mat4 MakeViewProjectionLookInDirection(glm::vec3 Pos, float Yaw, float Pitc
 
 	glm::mat4 Mp = glm::perspective(FOVy, Ar, nearPlane, farPlane);
 
+	Mp[1][1] *=-1;
 
-	glm::mat4 Mv = glm::rotate(glm::mat4(1.0), -Yaw, glm::vec3(0,0,1)) 
+	glm::mat4 Mv = glm::rotate(glm::mat4(1.0), -Roll, glm::vec3(0,0,1)) 
 					* glm::rotate(glm::mat4(1.0), -Pitch, glm::vec3(1,0,0)) 
-					* glm::rotate(glm::mat4(1.0), -Roll, glm::vec3(0,1,0)) 
+					* glm::rotate(glm::mat4(1.0), -Yaw, glm::vec3(0,1,0)) 
 					* glm::translate(glm::mat4(1.0), -Pos);
 
 	glm::mat4 M = Mp * Mv;
@@ -55,9 +56,19 @@ glm::mat4 MakeViewProjectionLookAt(glm::vec3 Pos, glm::vec3 Target, glm::vec3 Up
 	//	- Camera Target defined in formal parameter >Target<
 	//	- Up vector defined in formal parameter >Up<
 	//	- Looking rool defined in formal parameter >Roll<
-	glm::mat4 M = glm::mat4(1.0f);
 
-	return M;
+
+	glm::mat4 Mp = glm::perspective(FOVy, Ar, nearPlane, farPlane);
+	
+	Mp[1][1] *=-1;
+
+	glm::mat4 Mv = glm::rotate(Mp, -Roll, glm::vec3(0,0,1)) 
+					* glm::lookAt(Pos, Target, Up);
+
+
+
+
+	return Mv;
 }
 
 glm::mat4 MakeWorld(glm::vec3 Pos, float Yaw, float Pitch, float Roll) {
@@ -67,7 +78,11 @@ glm::mat4 MakeWorld(glm::vec3 Pos, float Yaw, float Pitch, float Roll) {
 	//	- Euler angle rotation pitch defined in formal parameter >Pitch<
 	//	- Euler angle rotation roll defined in formal parameter >Roll<
 	//  - Scaling constant and equal to 1 (and not passed to the procedure)
-	glm::mat4 M = glm::mat4(1.0f);
+	glm::mat4 Mw = glm::translate(glm::mat4(1.0), Pos) 
+				   *	glm::rotate(glm::mat4(1.0), Yaw, glm::vec3(0,1,0)) 
+				   *    glm::rotate(glm::mat4(1.0), Pitch , glm::vec3(1,0,0)) 
+				   *    glm::rotate(glm::mat4(1.0), Roll , glm::vec3(0,0,1)) 
+				   * 	glm::scale(glm::mat4(1.0), glm::vec3(1, 1, 1));
 
-	return M;
+	return Mw;
 }
