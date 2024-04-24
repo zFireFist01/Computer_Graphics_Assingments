@@ -44,11 +44,20 @@ void MakeCube(float size, std::vector<glm::vec3> &vertices, std::vector<uint32_t
 // HINT: the procedure below creates a square. You can use it as a side of the cube (please remember
 // to change the value of the y component, otherwise the result will be wrong
 	vertices = {
-				   {-size/2.0f,0.0f,-size/2.0f},
-				   {-size/2.0f,0.0f, size/2.0f},
-				   { size/2.0f,0.0f,-size/2.0f},
-				   { size/2.0f,0.0f, size/2.0f}};
-	indices = {0, 1, 2,    1, 3, 2};
+				   {-size/2.0f,0.0f,-size/2.0f}, // 0
+				   {-size/2.0f,0.0f, size/2.0f}, // 1
+				   { size/2.0f,0.0f,-size/2.0f}, // 2
+				   { size/2.0f,0.0f, size/2.0f}, // 3
+				   {-size/2.0f, size,-size/2.0f}, // 4
+				   {-size/2.0f, size, size/2.0f}, // 5 
+				   { size/2.0f, size,-size/2.0f}, // 6
+				   { size/2.0f, size, size/2.0f}}; // 7
+	indices = {1, 0, 2,    3, 1, 2, 
+			   0, 4, 2,    4, 6, 2,
+			   7, 3, 2,    6, 7, 2,
+			   0, 1, 5,    4, 0, 5,
+			   1, 3, 5,    3, 7, 5,
+               6, 4, 5,    7, 6, 5};
 
 }
 
