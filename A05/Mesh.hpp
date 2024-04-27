@@ -74,12 +74,53 @@ void MakeCylinder(float radius, float height, int slices, std::vector<glm::vec3>
 //
 // HINT: the procedure below creates a rectangle. You have to change it, or you will obtain a wrong result
 // You should use a for loop, and you should start from the procedure to create a circle seen during the lesson
+	
+	/*
 	vertices = {
 				   {-radius,-height/2.0f,0.0f},
 				   {-radius, height/2.0f,0.0f},
 				   { radius,-height/2.0f,0.0f},
 				   { radius, height/2.0f,0.0f}};
-	indices = {0, 2, 1,    1, 2, 3};
+
+	*/
+	
+
+	float halfHeight = height / 2.0f;
+	int numVertices = 2 * (slices + 1);  // slices + 1 for top and bottom
+	vertices.clear();
+	vertices.resize(numVertices);
+	indices.clear();
+
+	// Generate vertices for the bottom and top circles
+	for (int i = 0; i < slices; i++) {
+		float ang = 2 * M_PI * (float)i / (float)slices;
+		vertices[i] = glm::vec3(radius * cos(ang), -halfHeight, radius * sin(ang));
+		vertices[i + slices + 1] = glm::vec3(radius * cos(ang), halfHeight, radius * sin(ang));
+		
+		int next = (i + 1) % slices;
+
+		indices.push_back(i);
+		indices.push_back(i + slices + 1);
+		indices.push_back(next + slices + 1);
+
+		indices.push_back(i);
+		indices.push_back(next + slices + 1);
+		indices.push_back(next);
+	}
+
+	for (int i = 0; i < slices; i++) {
+		int next = (i + 1) % slices;
+		// Top cap - the vertices should be wound CCW as viewed from above
+		indices.push_back(slices + 1); // center top vertex
+		indices.push_back(next + slices + 2); // next top vertex
+		indices.push_back(i + slices + 2); // current top vertex
+
+		// Bottom cap - the vertices should be wound CCW as viewed from below
+		indices.push_back(0); // center bottom vertex
+		indices.push_back(i + 1); // current bottom vertex
+		indices.push_back(next + 1); // next bottom vertex
+	}
+
 
 }
 
@@ -116,6 +157,8 @@ void MakeSphere(float radius, int rings, int slices, std::vector<glm::vec3> &ver
 // HINT: the procedure below creates a circle. You have to change it, or you will obtain a wrong result
 // You should use two nested for loops, one used to span across the rings, and the other that spans along
 // the rings.
+
+
 	vertices.resize(slices+1);
 	indices.resize(3*slices);
 	vertices[slices]= {0.0f,0.0f,0.0f};
