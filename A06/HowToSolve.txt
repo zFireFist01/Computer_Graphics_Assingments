@@ -1,0 +1,9 @@
+
+Run this shell commands in the A06 folder:
+
+glslangValidator -V shaders/Shader.vert -o ShaderVert.spv
+glslangValidator -V shaders/Shader.frag -o ShaderFrag.spv
+
+Once done, you must have two new files in the A06 folder called ShaderVert and ShaderFrag;
+drag those files in the shaders directory. Now if you compile and run the code
+everything will be allright! The assignment is complete!
