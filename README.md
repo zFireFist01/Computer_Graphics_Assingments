@@ -1,6 +1,6 @@
-## Computer Graphics Assingments
+# Computer Graphics Assingments
 
-# Ubuntu Requirements 
+## Ubuntu Requirements 
 
 ```shell
 sudo apt install vulkan-tools
