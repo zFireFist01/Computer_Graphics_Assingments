@@ -49,13 +49,22 @@ void MakeCube(float size, std::vector<std::array<float,6>> &vertices, std::vecto
 //
 // HINT: the procedure below creates a square. You can use it as a side of the cube (please remember
 // to change the value of the y component, otherwise the result will be wrong
+    float half = size / 2.0f;
 	vertices = {
-				   {-size/2.0f,0.0f,-size/2.0f,0.0f,1.0f,0.0f},
-				   {-size/2.0f,0.0f, size/2.0f,0.0f,1.0f,0.0f},
-				   { size/2.0f,0.0f,-size/2.0f,0.0f,1.0f,0.0f},
-				   { size/2.0f,0.0f, size/2.0f,0.0f,1.0f,0.0f}};
-	indices = {0, 1, 2,    1, 3, 2};
-
+				   {-size/2.0f, -half,-size/2.0f,  1, 1, 1}, // 0
+				   {-size/2.0f, -half, size/2.0f,  -1, -1, 1}, // 1
+				   { size/2.0f, -half,-size/2.0f,  1, -1, -1}, // 2
+				   { size/2.0f, -half, size/2.0f,  1, -1, 1}, // 3
+				   {-size/2.0f, half,-size/2.0f,   -1, 1, -1}, // 4
+				   {-size/2.0f, half, size/2.0f,   -1, 1, 1}, // 5 
+				   { size/2.0f, half,-size/2.0f,   1, 1, -1}, // 6
+				   { size/2.0f, half, size/2.0f,   1, 1, 1}}; // 7
+	indices = {1, 0, 2,    3, 1, 2, 
+			   0, 4, 2,    4, 6, 2,
+			   7, 3, 2,    6, 7, 2,
+			   0, 1, 5,    4, 0, 5,
+			   1, 3, 5,    3, 7, 5,
+               6, 4, 5,    7, 6, 5};
 }
 
 void MakeCylinder(float radius, float height, int slices, std::vector<std::array<float,6>> &vertices, std::vector<uint32_t> &indices) {
@@ -74,13 +83,50 @@ void MakeCylinder(float radius, float height, int slices, std::vector<std::array
 //
 // HINT: the procedure below creates a rectangle. You have to change it, or you will obtain a wrong result
 // You should use a for loop, and you should start from the procedure to create a circle seen during the lesson
-	vertices = {
-				   {-radius,-height/2.0f,0.0f,0.0f,0.0f,1.0f},
-				   {-radius, height/2.0f,0.0f,0.0f,0.0f,1.0f},
-				   { radius,-height/2.0f,0.0f,0.0f,0.0f,1.0f},
-				   { radius, height/2.0f,0.0f,0.0f,0.0f,1.0f}};
-	indices = {0, 2, 1,    1, 2, 3};
+    vertices.clear();
+    indices.clear();
+    float halfHeight = height / 2.0f;
+    float angleStep = 2 * M_PI / slices;
 
+    for (int i = 0; i < slices; ++i) {
+        float angle = i * angleStep;
+        float nextAngle = (i + 1) * angleStep;
+        float x = radius * cos(angle);
+        float z = radius * sin(angle);
+        float nextX = radius * cos(nextAngle);
+        float nextZ = radius * sin(nextAngle);
+
+        // Bottom vertices
+        vertices.push_back({x, -halfHeight, z, 0.0f, -1.0f, 0.0f});
+        // Top vertices
+        vertices.push_back({x, halfHeight, z, 0.0f, 1.0f, 0.0f});
+
+        // Indices for side faces
+        indices.push_back(i * 2);
+        indices.push_back((i * 2 + 2) % (slices * 2));
+        indices.push_back(i * 2 + 1);
+
+        indices.push_back(i * 2 + 1);
+        indices.push_back((i * 2 + 2) % (slices * 2));
+        indices.push_back((i * 2 + 3) % (slices * 2));
+    }
+
+    // Indices for bottom and top faces
+    for (int i = 0; i < slices; ++i) {
+        // Bottom face
+        indices.push_back(i * 2);
+        indices.push_back((i * 2 + 2) % (slices * 2));
+        indices.push_back(slices * 2);
+
+        // Top face
+        indices.push_back((i * 2 + 1) % (slices * 2));
+        indices.push_back((i * 2 + 3) % (slices * 2));
+        indices.push_back(slices * 2 + 1);
+    }
+
+    // Center vertices for bottom and top faces
+    vertices.push_back({0.0f, -halfHeight, 0.0f, 0.0f, -1.0f, 0.0f}); // Bottom center
+    vertices.push_back({0.0f, halfHeight, 0.0f, 0.0f, 1.0f, 0.0f});  // Top center
 }
 
 void MakeCone(float radius, float height, int slices, std::vector<std::array<float,6>> &vertices, std::vector<uint32_t> &indices) {
@@ -99,11 +145,34 @@ void MakeCone(float radius, float height, int slices, std::vector<std::array<flo
 //
 // HINT: the procedure below creates a triangle. You have to change it, or you will obtain a wrong result
 // You should use a for loop, and you should start from the procedure to create a circle seen during the lesson
-	vertices = {
-				   {-radius,-height/2.0f,0.0f,0.0f,0.0f,1.0f},
-				   { radius,-height/2.0f,0.0f,0.0f,0.0f,1.0f},
-				   { 0.0f,   height/2.0f,0.0f,0.0f,0.0f,1.0f}};
-	indices = {0, 1, 2};
+	vertices.clear();
+    indices.clear();
+    float halfHeight = height / 2.0f;
+    float angleStep = 2 * M_PI / slices;
+
+    // Tip of the cone
+    vertices.push_back({0.0f, halfHeight, 0.0f, 0.0f, 1.0f, 0.0f});
+
+    for (int i = 0; i < slices; ++i) {
+        float angle = i * angleStep;
+        float x = radius * cos(angle);
+        float z = radius * sin(angle);
+
+        // Base vertices
+        vertices.push_back({x, -halfHeight, z, 0.0f, -1.0f, 0.0f});
+
+        // Indices for side faces
+        indices.push_back(0);
+        indices.push_back((i + 1) % slices + 1);
+        indices.push_back(i + 1);
+    }
+
+    // Indices for bottom face
+    for (int i = 0; i < slices; ++i) {
+        indices.push_back(0);
+        indices.push_back(i + 1);
+        indices.push_back((i + 1) % slices + 1);
+    }
 }
 
 void MakeSphere(float radius, int rings, int slices, std::vector<std::array<float,6>> &vertices, std::vector<uint32_t> &indices)
@@ -122,14 +191,35 @@ void MakeSphere(float radius, int rings, int slices, std::vector<std::array<floa
 // HINT: the procedure below creates a circle. You have to change it, or you will obtain a wrong result
 // You should use two nested for loops, one used to span across the rings, and the other that spans along
 // the rings.
-	vertices.resize(slices+1);
-	indices.resize(3*slices);
-	vertices[slices] = {0.0f,0.0f,0.0f,0.0f,0.0f,1.0f};
-	for(int i = 0; i < slices; i++) {
-		float ang = 2*M_PI * (float)i / (float)slices;
-		vertices[i] = {radius * cos(ang), radius * sin(ang), 0.0f,0.0f,0.0f,1.0f};
-		indices[3*i  ] = slices;
-		indices[3*i+1] = i;
-		indices[3*i+2] = (i+1) % slices;
-	}
+	vertices.clear();
+    indices.clear();
+
+    for (int i = 0; i <= rings; ++i) {
+        float phi = M_PI * i / rings;
+        for (int j = 0; j <= slices; ++j) {
+            float theta = 2 * M_PI * j / slices;
+            float x = radius * sin(phi) * cos(theta);
+            float y = radius * cos(phi);
+            float z = radius * sin(phi) * sin(theta);
+            float nx = x / radius;
+            float ny = y / radius;
+            float nz = z / radius;
+            vertices.push_back({x, y, z, nx, ny, nz});
+        }
+    }
+
+    // Indices for triangles
+    for (int i = 0; i < rings; ++i) {
+        for (int j = 0; j < slices; ++j) {
+            int first = i * (slices + 1) + j;
+            int second = first + slices + 1;
+            indices.push_back(first);
+            indices.push_back(first + 1);
+            indices.push_back(second);
+
+            indices.push_back(first + 1);
+            indices.push_back(second + 1);
+            indices.push_back(second);
+        }
+    }
 }
