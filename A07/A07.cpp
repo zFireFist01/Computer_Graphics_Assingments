@@ -20,8 +20,12 @@ struct UniformBufferObject {
 };
 
 struct GlobalUniformBufferObject {
-	alignas(16) glm::vec3 lightDir[5];
-	alignas(16) glm::vec3 lightPos[5];
+	struct {
+	alignas(16) glm::vec3 v;
+	} lightDir[5];
+	struct {
+	alignas(16) glm::vec3 v;
+	} lightPos[5];
 	alignas(16) glm::vec4 lightColor[5];
 	alignas(4) float cosIn;
 	alignas(4) float cosOut;
@@ -440,8 +444,8 @@ lightOn  = glm::vec4(1,1,1,1);
 //		gubo.lightDir = glm::vec3(cos(glm::radians(135.0f)), sin(glm::radians(135.0f)), 0.0f);
 		for(int i = 0; i <5; i++) {
 			gubo.lightColor[i] = glm::vec4(LCol[i], LInt[i]);
-			gubo.lightDir[i] = LWm[i] * glm::vec4(0,0,1,0);
-			gubo.lightPos[i] = LWm[i] * glm::vec4(0,0,0,1);
+			gubo.lightDir[i].v = LWm[i] * glm::vec4(0,0,1,0);
+			gubo.lightPos[i].v = LWm[i] * glm::vec4(0,0,0,1);
 		}
 //printVec3("LD", gubo.lightDir[0]);
 //printVec3("LP", gubo.lightPos[0]);
