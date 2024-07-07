@@ -1,0 +1,11 @@
+BRDF stands for Bidirectional Reflectance Distribution Function. It is a fundamental concept in computer graphics and physically-based rendering (PBR) that describes how light is reflected at an opaque surface. The BRDF defines the relationship between incoming light and the reflected light at a surface, which is essential for realistic rendering of materials.
+
+Most of the BRDF functions, indirect light approximation and light emission models will be implemented using Shaders written with the GLSL language.
+
+GLSL is a C-like language.
+
+Vulkan require that at least GLSL version is supported. For this reason, a shader source code should start with the #version directive, asking at least for version 4.5.
+
+GLSL uses the column major encoding.
+
+Contiene la sintassi di GLSL in toto ma non ti da info su cosa fare.

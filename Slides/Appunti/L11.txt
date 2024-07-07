@@ -1,0 +1,28 @@
+Una mesh (o griglia) è una struttura dati utilizzata in computer grafica per rappresentare la forma di un oggetto tridimensionale. È composta da una rete di vertici (punti nello spazio 3D), bordi (linee che collegano i vertici) e facce (superfici piane delimitate da bordi).
+
+
+The Pipeline is a sequence of operations. A pipeline is a structure where a stream of data need to be processed into several steps. The process of creating an image on screen starting from the primitive description is accomplished through a set of steps than can be organized as a pipeline. The actions taken in each stage of the pipeline can be either fixed and defined by the system (Vulkan, in our case), or programmed by the user. Algorithms running in the programmable stages of the pipeline are called Shaders. In the following we will learn how to write shaders and control the graphics pipeline.
+Each pipeline type has its own set of fixed functions, input and output description, and programmable stages. Creating a pipeline requires configuring all the parameters needed by its fixed functions, and connect it with the shaders that perform the user defined parts.
+
+Four types of Pipelines: 
+• Graphic pipelines
+• Ray-tracing pipelines
+• Mesh Shading pipelines
+• Compute pipelines
+
+Scan-line rendering: is the simplest approximation of the rendering equations. The technique focuses only on the points currently visible by the camera. Objects can only reflect light. They might emit some light, but they cannot illuminate other objects.
+
+Pipeline stages:
+1) Input assembler (disegnamo con i vertici qualcosa)
+2) Vertex Shader (operazioni sui vertici) (e.g. Such operations, for example, transform local coordinates to clipping coordinates by multiplying vertex positions with the corresponding WVP matrix, or compute colors and other values associated to vertices, which will be used in later stages of the process.)
+3) Rasterization: determines the pixels in the frame-buffer occupied by each primitives. They are called fragments and not pixels, since a single pixel on screen can be computed by merging several fragments to increase the quality of the final image (the so called anti-aliasing: we will briefly return on this in a future lesson). In these stages, the “division by w” to transform clipping coordinates into normalized screen coordinates is also performed.
+
+
+Fragments are usually generated per line, left to right, with respect to the corresponding triangle. This feature is what motivates the “scanline rendering” name of this technique.
+
+4) Fragment Shader: The final color of each fragment is determined by a user defined function contained in the Fragment shader. It will compute the approximate solution of the rendering equation for the considered pixel.
+
+5) Finally, the computed colors might either replace the ones already present in the same position, or be combined with them. The latter can be used to implement transparency, or other blending effects.
+
+
+
