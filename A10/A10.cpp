@@ -36,17 +36,18 @@ struct skyBoxUniformBufferObject {
 };
 
 // **A10** Place here the CPP struct for the uniform buffer for the matrices
-struct sphereUniformBufferObject {
-	alignas(16) glm::mat4 mvpMat;
-	alignas(16) glm::mat4 mMat;
-	alignas(16) glm::mat4 nMat;
+struct EarthTransformMatrices {
+    glm::mat4 mvpMat;
+    glm::mat4 mMat;
+    glm::mat4 nMat;
 };
+
 // **A10** Place here the CPP struct for the uniform buffer for the parameters
-struct shaderUniformBufferObject {
-	alignas(4)  float Pow;
-	alignas(4)  float Ang;
-	alignas(4)  float ShowCloud;
-	alignas(4)  float ShowTexture;
+struct EarthShaderParams {
+    float Pow;
+    float Ang;
+    float ShowCloud;
+    float ShowTexture;
 };
 
 
@@ -68,11 +69,11 @@ struct skyBoxVertex {
 };
 
 // **A10** Place here the CPP struct for the vertex definition
-struct SphereVertex {
-	glm::vec3 fragPos; 	//POSITION
-	glm::vec3 fragNorm; //NORMAL
-	glm::vec2 fragUV; 	//UV
-	glm::vec4 fragTan; 	//TANGENT
+struct EarthVertex {
+    glm::vec3 fragPos;
+    glm::vec3 fragNorm;
+    glm::vec2 fragUV;
+    glm::vec4 fragTan;
 };
 
 
@@ -88,20 +89,22 @@ class A10 : public BaseProject {
 	DescriptorSetLayout DSLskyBox;	// For skyBox
 
 // **A10** Place here the variable for the DescriptorSetLayout
-	DescriptorSetLayout DSLsphere;	// For sphere
+	DescriptorSetLayout DSLEarth;
 
 	// Vertex formats
 	VertexDescriptor VDBlinn;
 	VertexDescriptor VDEmission;
 	VertexDescriptor VDskyBox;
 // **A10** Place here the variable for the VertexDescriptor
-	VertexDescriptor VDsphere;
+	VertexDescriptor VDEarth;
+
 	// Pipelines [Shader couples]
 	Pipeline PBlinn;
 	Pipeline PEmission;
 	Pipeline PskyBox;
 // **A10** Place here the variable for the Pipeline
-	Pipeline Psphere;
+	Pipeline PEarth;
+
 	// Scenes and texts
     TextMaker txt;
 
@@ -121,10 +124,10 @@ class A10 : public BaseProject {
 	DescriptorSet DSskyBox;
 
 // **A10** Place here the variables for the Model, the five texture (diffuse, specular, normal map, emission and clouds) and the Descrptor Set
-	Model Msphere;
-	Texture Tdiffuse, Tspecular, Tnormal, Temission, Tclouds;
-	DescriptorSet DSsphere;
-	
+	Model Mearth;
+	Texture TearthDiff, TearthSpec, TearthNorm, TearthEmission, TearthClouds;
+	DescriptorSet DSearth;
+
 	// Other application parameters
 	int currScene = 0;
 	int subpass = 0;
@@ -161,7 +164,7 @@ class A10 : public BaseProject {
 				});
 		DSLBlinn.init(this, {
 					{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, sizeof(BlinnUniformBufferObject), 1},
-					{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0},
+					{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0, 1},
 					{2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(BlinnMatParUniformBufferObject), 1}
 				});
 		DSLEmission.init(this, {
@@ -174,17 +177,15 @@ class A10 : public BaseProject {
 					{2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1, 1}
 				  });
 // **A10** Place here the initialization of the the DescriptorSetLayout
-		// Descriptor Set Layout for sphere
-		DSLsphere.init(this, {
-			{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, sizeof(sphereUniformBufferObject), 1},
-			{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0, 1},
-			{2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0, 1},
-			{3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0, 1},
-			{4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0, 1},
-			{5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0, 1},
-			{6, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(shaderUniformBufferObject), 1}
-		});
-
+		DSLEarth.init(this, {
+					{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, sizeof(EarthTransformMatrices), 1},
+					{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0, 1},
+					{2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1, 1},
+					{3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 2, 1},
+					{4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 3, 1},
+					{5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 4, 1},
+					{6, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(EarthShaderParams), 1}
+				});
 
 
 		// Vertex descriptors
@@ -212,20 +213,16 @@ class A10 : public BaseProject {
 				  {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(skyBoxVertex, pos),
 				         sizeof(glm::vec3), POSITION}
 				});
-// **A10** Place here the initialization for the VertexDescriptor
-		VDsphere.init(this, {
-				  {0, sizeof(SphereVertex), VK_VERTEX_INPUT_RATE_VERTEX}
-				}, {
-				  {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(SphereVertex, fragPos),
-				         sizeof(glm::vec3), POSITION},
-				  {0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(SphereVertex, fragNorm),
-				         sizeof(glm::vec3), NORMAL},
-				  {0, 2, VK_FORMAT_R32G32_SFLOAT, offsetof(SphereVertex, fragUV),
-				         sizeof(glm::vec2), UV},
-				  {0, 3, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(SphereVertex, fragTan),
-				         sizeof(glm::vec4), TANGENT}
-				});
 
+// **A10** Place here the initialization for the VertexDescriptor
+		VDEarth.init(this, {
+					{0, sizeof(EarthVertex), VK_VERTEX_INPUT_RATE_VERTEX}
+				}, {
+					{0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(EarthVertex, fragPos), sizeof(glm::vec3), POSITION},
+					{0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(EarthVertex, fragNorm), sizeof(glm::vec3), NORMAL},
+					{0, 2, VK_FORMAT_R32G32_SFLOAT, offsetof(EarthVertex, fragUV), sizeof(glm::vec2), UV},
+					{0, 3, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(EarthVertex, fragTan), sizeof(glm::vec4), TANGENT}
+				});
 
 		// Pipelines [Shader couples]
 		PBlinn.init(this, &VDBlinn,  "shaders/BlinnVert.spv",    "shaders/BlinnFrag.spv", {&DSLGlobal, &DSLBlinn});
@@ -236,48 +233,45 @@ class A10 : public BaseProject {
 // **A10** Place here the initialization of the pipeline. Remember that it should use shaders in files
 //		"shaders/NormalMapVert.spv" and "shaders/NormalMapFrag.spv", it should receive the new VertexDescriptor you defined
 //		And should receive two DescriptorSetLayout, the first should be DSLGlobal, while the other must be the one you defined
+		PEarth.init(this, &VDEarth, "shaders/NormalMapVert.spv", "shaders/NormalMapFrag.spv", {&DSLGlobal, &DSLEarth});
 
-		Psphere.init(this, &VDsphere, "shaders/NormalMapVert.spv", "shaders/NormalMapFrag.spv", {&DSLGlobal, &DSLsphere});
 		// Create models
 		Mship.init(this, &VDBlinn, "models/X-WING-baker.obj", OBJ);
 		Msun.init(this, &VDEmission, "models/Sphere.obj", OBJ);
 		MskyBox.init(this, &VDskyBox, "models/SkyBoxCube.obj", OBJ);
 // **A10** Place here the loading of the model. It should be contained in file "models/Sphere.gltf", it should use the
 //		Vertex descriptor you defined, and be of GLTF format.
-		Msphere.init(this, &VDsphere, "models/Sphere.gltf", GLTF);
+		Mearth.init(this, &VDEarth, "models/Sphere.gltf", GLTF);
 		
 		// Create the textures
 		Tship.init(this, "textures/XwingColors.png");
 		Tsun.init(this, "textures/2k_sun.jpg");
 		TskyBox.init(this, "textures/starmap_g4k.jpg");
 		Tstars.init(this, "textures/constellation_figures.png");
+
 // **A10** Place here the loading of the four textures
 		// Diffuse color of the planet in: "2k_earth_daymap.jpg"
-		Tdiffuse.init(this, "textures/2k_earth_daymap.jpg");
-
+		TearthDiff.init(this, "textures/2k_earth_daymap.jpg");
 		// Specular color of the planet in: "2k_earth_specular_map.png"
-		Tspecular.init(this, "textures/2k_earth_specular_map.png");
-
+		TearthSpec.init(this, "textures/2k_earth_specular_map.png");
 		// Normal map of the planet in: "2k_earth_normal_map.png"
 		// note that it must add a special feature to support the normal map, in particular
 		// the init function should be the following: .init(this, "textures/2k_earth_normal_map.png", VK_FORMAT_R8G8B8A8_UNORM);
-		Tnormal.init(this, "textures/2k_earth_normal_map.png", VK_FORMAT_R8G8B8A8_UNORM);
+		TearthNorm.init(this, "textures/2k_earth_normal_map.png", VK_FORMAT_R8G8B8A8_UNORM);
 		// Emission map in: "2k_earth_nightmap.jpg"
-		Temission.init(this, "textures/2k_earth_nightmap.jpg");
-
+		TearthEmission.init(this, "textures/2k_earth_nightmap.jpg");
 		// Clouds map in: "2k_earth_clouds.jpg"
-		Tclouds.init(this, "textures/2k_earth_clouds.jpg");
-
+		TearthClouds.init(this, "textures/2k_earth_clouds.jpg");
 
 		// Descriptor pool sizes
 		// WARNING!!!!!!!!
 		// Must be set before initializing the text and the scene
 // **A10** Update the number of elements to correctly size the descriptor sets pool
-		DPSZs.uniformBlocksInPool = 6;
-		DPSZs.texturesInPool = 5;
+		DPSZs.uniformBlocksInPool = 7;
+		DPSZs.texturesInPool = 9;
 		DPSZs.setsInPool = 5;
 
-		std::cout << "Initializing text\n";
+std::cout << "Initializing text\n";
 		txt.init(this, &outText);
 
 		std::cout << "Initialization completed!\n";
@@ -295,7 +289,7 @@ class A10 : public BaseProject {
 		PEmission.create();
 		PskyBox.create();
 // **A10** Add the pipeline creation
-		Psphere.create();
+		PEarth.create();
 
 		// Here you define the data set
 		DSship.init(this, &DSLBlinn, {&Tship});
@@ -303,7 +297,8 @@ class A10 : public BaseProject {
 		DSskyBox.init(this, &DSLskyBox, {&TskyBox, &Tstars});
 // **A10** Add the descriptor set creation
 // Textures should be passed in the diffuse, specular, normal map, emission and clouds order.
-		DSsphere.init(this, &DSLsphere, {&Tdiffuse, &Tspecular, &Tnormal, &Temission, &Tclouds});
+		DSearth.init(this, &DSLEarth, {&TearthDiff, &TearthSpec, &TearthNorm, &TearthEmission, &TearthClouds});
+
 		DSGlobal.init(this, &DSLGlobal, {});
 
 		txt.pipelinesAndDescriptorSetsInit();		
@@ -317,14 +312,14 @@ class A10 : public BaseProject {
 		PEmission.cleanup();
 		PskyBox.cleanup();
 // **A10** Add the pipeline cleanup
-		Psphere.cleanup();
+		PEarth.cleanup();
 
 		DSship.cleanup();
 		DSsun.cleanup();
 		DSskyBox.cleanup();
 		DSGlobal.cleanup();
 // **A10** Add the descriptor set cleanup
-		DSsphere.cleanup();
+		DSearth.cleanup();
 
 		txt.pipelinesAndDescriptorSetsCleanup();
 	}
@@ -344,12 +339,13 @@ class A10 : public BaseProject {
 		Tstars.cleanup();
 		MskyBox.cleanup();
 // **A10** Add the cleanup for models and textures
-		Tdiffuse.cleanup();
-		Tspecular.cleanup();
-		Tnormal.cleanup();
-		Temission.cleanup();
-		Tclouds.cleanup();
-		Msphere.cleanup();
+		TearthDiff.cleanup();
+		TearthSpec.cleanup();
+		TearthNorm.cleanup();
+		TearthEmission.cleanup();
+		TearthClouds.cleanup();
+		Mearth.cleanup();
+		
 		
 		// Cleanup descriptor set layouts
 		DSLBlinn.cleanup();
@@ -357,20 +353,21 @@ class A10 : public BaseProject {
 		DSLGlobal.cleanup();
 		DSLskyBox.cleanup();
 // **A10** Add the cleanup for the descriptor set layout
-		DSLsphere.cleanup();
+		DSLEarth.cleanup();
+
 		// Destroies the pipelines
 		PBlinn.destroy();
 		PEmission.destroy();
 		PskyBox.destroy();
 // **A10** Add the cleanup for the pipeline
-		Psphere.destroy();
+		PEarth.destroy();
+
 		txt.localCleanup();		
 	}
 	
 	// Here it is the creation of the command buffer:
 	// You send to the GPU all the objects you want to draw,
 	// with their buffers and textures
-	
 	void populateCommandBuffer(VkCommandBuffer commandBuffer, int currentImage) {
 		// binds the pipeline
 		PBlinn.bind(commandBuffer);
@@ -386,6 +383,7 @@ class A10 : public BaseProject {
 		vkCmdDrawIndexed(commandBuffer,
 				static_cast<uint32_t>(Mship.indices.size()), NSHIP, 0, 0, 0);	
 
+
 		PEmission.bind(commandBuffer);
 		Msun.bind(commandBuffer);
 		DSsun.bind(commandBuffer, PEmission, 0, currentImage);
@@ -400,11 +398,15 @@ class A10 : public BaseProject {
 					static_cast<uint32_t>(MskyBox.indices.size()), 1, 0, 0, 0);
 
 // **A10** Add the commands to bind the pipeline, the mesh its two descriptor setes, and the draw call of the planet
-		Psphere.bind(commandBuffer);
-		Msphere.bind(commandBuffer);
-		DSsphere.bind(commandBuffer, Psphere, 0, currentImage);
-		vkCmdDrawIndexed(commandBuffer,
-					static_cast<uint32_t>(Msphere.indices.size()), 1, 0, 0, 0);
+		
+		PEarth.bind(commandBuffer);
+		Mearth.bind(commandBuffer);
+		DSGlobal.bind(commandBuffer, PEarth, 0, currentImage);
+		DSearth.bind(commandBuffer, PEarth, 1, currentImage);
+		vkCmdDrawIndexed(commandBuffer, 
+					static_cast<uint32_t>(Mearth.indices.size()), 1, 0, 0, 0);
+
+
 
 		txt.populateCommandBuffer(commandBuffer, currentImage, currScene);
 	}
@@ -638,33 +640,38 @@ ShowTexture    = 0;
 		DSskyBox.map(currentImage, &sbubo, 0);
 		
 // **A10** Add to compute the uniforms and pass them to the shaders. You need two uniforms: one for the matrices, and the other for the material parameters.
-		sphereUniformBufferObject sphereUbo{};
+		EarthTransformMatrices earthTransform{};
+		EarthShaderParams earthParams{};
+
 		// World and normal matrix should be the identiy. The World-View-Projection should be variable ViewPrj
+		earthTransform.mvpMat = ViewPrj;
+		earthTransform.mMat = glm::mat4(1.0f);
+		earthTransform.nMat = glm::mat4(1.0f);
 		// These informations should be used to fill the Uniform Buffer Object in Binding 0 of your DSL
-		sphereUbo.mMat = glm::mat4(1.0f);
-		sphereUbo.nMat = glm::mat4(1.0f);
-		sphereUbo.mvpMat = ViewPrj;
-		DSsphere.map(currentImage, &sphereUbo, 0);
+		DSearth.map(currentImage, &earthTransform, 0);
 
 		// The specular power of the uniform buffer containing the material parameters of the new object should be set to:
 		// XXX.Power = 200.0
 		// Where you replace XXX.Power with the field of the local variable corresponding to the uniform buffer object
-		shaderUniformBufferObject shaderUbo{};
-		shaderUbo.Pow = 200.0;
+		earthParams.Pow = 200.0f;
+
 		// The textre angle parameter of the uniform buffer containing the material parameters of the new object shoud be set to: tTime * TangTurnTimeFact
 		// XXX.Ang = tTime * TangTurnTimeFact;
 		// Where you replace XXX.Ang with the local field of the variable corresponding to the uniform buffer object
-		shaderUbo.Ang = tTime * TangTurnTimeFact;
+		earthParams.Ang = tTime * TangTurnTimeFact;
+
 		// The selector for showing the clouds of the uniform buffer containing the material parameters of the new object should be set to:
 		// XXX.ShowCloud = ShowCloud
 		// Where you replace XXX.ShowCloud with the local field of the variable corresponding to the uniform buffer object
-		shaderUbo.ShowCloud = ShowCloud;
+		earthParams.ShowCloud = ShowCloud;
+
 		// The selector for showing the clouds of the uniform buffer containing the material parameters of the new object should be set to:
 		// XXX.ShowTexture = ShowTexture
 		// Where you replace XXX.ShowTexture with the local field of the variable corresponding to the uniform buffer object
-		shaderUbo.ShowTexture = ShowTexture;
+		earthParams.ShowTexture = ShowTexture;
+
 		// These informations should be used to fill the Uniform Buffer Object in Binding 6 of your DSL
-		DSsphere.map(currentImage, &shaderUbo, 6);
+		DSearth.map(currentImage, &earthParams, 6);
 	}
 };
 
