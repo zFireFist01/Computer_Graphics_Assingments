@@ -37,17 +37,17 @@ struct skyBoxUniformBufferObject {
 
 // **A10** Place here the CPP struct for the uniform buffer for the matrices
 struct EarthTransformMatrices {
-    glm::mat4 mvpMat;
-    glm::mat4 mMat;
-    glm::mat4 nMat;
+    alignas(16) glm::mat4 mvpMat;
+   	alignas(16) glm::mat4 mMat;
+    alignas(16) glm::mat4 nMat;
 };
 
 // **A10** Place here the CPP struct for the uniform buffer for the parameters
 struct EarthShaderParams {
-    float Pow;
-    float Ang;
-    float ShowCloud;
-    float ShowTexture;
+    alignas(4) float Pow;
+    alignas(4) float Ang;
+    alignas(4) float ShowCloud;
+    alignas(4) float ShowTexture;
 };
 
 
