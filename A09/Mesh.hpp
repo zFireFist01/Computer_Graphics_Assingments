@@ -49,7 +49,7 @@ void MakeCube(float size, std::vector<std::array<float,6>> &vertices, std::vecto
 //
 // HINT: the procedure below creates a square. You can use it as a side of the cube (please remember
 // to change the value of the y component, otherwise the result will be wrong
-    float half = size / 2.0f;
+	float half = size / 2.0f;
 	vertices = {
 				   {-size/2.0f, -half,-size/2.0f,  1, 1, 1}, // 0
 				   {-size/2.0f, -half, size/2.0f,  -1, -1, 1}, // 1
@@ -59,6 +59,7 @@ void MakeCube(float size, std::vector<std::array<float,6>> &vertices, std::vecto
 				   {-size/2.0f, half, size/2.0f,   -1, 1, 1}, // 5 
 				   { size/2.0f, half,-size/2.0f,   1, 1, -1}, // 6
 				   { size/2.0f, half, size/2.0f,   1, 1, 1}}; // 7
+	
 	indices = {1, 0, 2,    3, 1, 2, 
 			   0, 4, 2,    4, 6, 2,
 			   7, 3, 2,    6, 7, 2,
@@ -83,50 +84,60 @@ void MakeCylinder(float radius, float height, int slices, std::vector<std::array
 //
 // HINT: the procedure below creates a rectangle. You have to change it, or you will obtain a wrong result
 // You should use a for loop, and you should start from the procedure to create a circle seen during the lesson
-    vertices.clear();
-    indices.clear();
     float halfHeight = height / 2.0f;
     float angleStep = 2 * M_PI / slices;
 
-    for (int i = 0; i < slices; ++i) {
+    // Vertici
+    for (int i = 0; i <= slices; ++i) {
         float angle = i * angleStep;
-        float nextAngle = (i + 1) * angleStep;
         float x = radius * cos(angle);
         float z = radius * sin(angle);
-        float nextX = radius * cos(nextAngle);
-        float nextZ = radius * sin(nextAngle);
 
-        // Bottom vertices
-        vertices.push_back({x, -halfHeight, z, 0.0f, -1.0f, 0.0f});
-        // Top vertices
-        vertices.push_back({x, halfHeight, z, 0.0f, 1.0f, 0.0f});
-
-        // Indices for side faces
-        indices.push_back(i * 2);
-        indices.push_back((i * 2 + 2) % (slices * 2));
-        indices.push_back(i * 2 + 1);
-
-        indices.push_back(i * 2 + 1);
-        indices.push_back((i * 2 + 2) % (slices * 2));
-        indices.push_back((i * 2 + 3) % (slices * 2));
+        // Vertice del cerchio superiore
+        vertices.push_back({x, halfHeight, z, x, 0.0f, z});
+        // Vertice del cerchio inferiore
+        vertices.push_back({x, -halfHeight, z, x, 0.0f, z});
     }
 
-    // Indices for bottom and top faces
+    // Vertici centrali superiore e inferiore
+    vertices.push_back({0.0f, halfHeight, 0.0f, 0.0f, 1.0f, 0.0f});
+    vertices.push_back({0.0f, -halfHeight, 0.0f, 0.0f, -1.0f, 0.0f});
+
+    int topCenterIndex = vertices.size() - 2;
+    int bottomCenterIndex = vertices.size() - 1;
+
+    // Indici per i lati
     for (int i = 0; i < slices; ++i) {
-        // Bottom face
-        indices.push_back(i * 2);
-        indices.push_back((i * 2 + 2) % (slices * 2));
-        indices.push_back(slices * 2);
+        int next = (i + 1) % slices;
+        int top1 = 2 * i;
+        int top2 = 2 * next;
+        int bottom1 = top1 + 1;
+        int bottom2 = top2 + 1;
 
-        // Top face
-        indices.push_back((i * 2 + 1) % (slices * 2));
-        indices.push_back((i * 2 + 3) % (slices * 2));
-        indices.push_back(slices * 2 + 1);
+        indices.push_back(top1);
+        indices.push_back(bottom2);
+        indices.push_back(bottom1);
+
+        indices.push_back(top1);
+        indices.push_back(top2);
+        indices.push_back(bottom2);
     }
 
-    // Center vertices for bottom and top faces
-    vertices.push_back({0.0f, -halfHeight, 0.0f, 0.0f, -1.0f, 0.0f}); // Bottom center
-    vertices.push_back({0.0f, halfHeight, 0.0f, 0.0f, 1.0f, 0.0f});  // Top center
+    // Indici per le basi superiore e inferiore
+    for (int i = 0; i < slices; ++i) {
+        int next = (i + 1) % slices;
+        int top1 = 2 * i;
+        int bottom1 = top1 + 1;
+
+        indices.push_back(top1);
+        indices.push_back(topCenterIndex);
+        indices.push_back(2 * next);
+
+        indices.push_back(bottom1);
+        indices.push_back(2 * next + 1);
+        indices.push_back(bottomCenterIndex);
+    }
+
 }
 
 void MakeCone(float radius, float height, int slices, std::vector<std::array<float,6>> &vertices, std::vector<uint32_t> &indices) {
@@ -145,33 +156,41 @@ void MakeCone(float radius, float height, int slices, std::vector<std::array<flo
 //
 // HINT: the procedure below creates a triangle. You have to change it, or you will obtain a wrong result
 // You should use a for loop, and you should start from the procedure to create a circle seen during the lesson
-	vertices.clear();
-    indices.clear();
+	float angleStep = 2 * M_PI / slices;
     float halfHeight = height / 2.0f;
-    float angleStep = 2 * M_PI / slices;
 
-    // Tip of the cone
+    // Vertice superiore
     vertices.push_back({0.0f, halfHeight, 0.0f, 0.0f, 1.0f, 0.0f});
+    int topVertexIndex = 0;
 
+    // Vertici del cerchio inferiore
     for (int i = 0; i < slices; ++i) {
         float angle = i * angleStep;
         float x = radius * cos(angle);
         float z = radius * sin(angle);
-
-        // Base vertices
-        vertices.push_back({x, -halfHeight, z, 0.0f, -1.0f, 0.0f});
-
-        // Indices for side faces
-        indices.push_back(0);
-        indices.push_back((i + 1) % slices + 1);
-        indices.push_back(i + 1);
+        float nx = cos(angle); // normale in direzione della posizione x
+        float nz = sin(angle); // normale in direzione della posizione z
+        vertices.push_back({x, -halfHeight, z, nx, 0.0f, nz});
     }
 
-    // Indices for bottom face
-    for (int i = 0; i < slices; ++i) {
-        indices.push_back(0);
-        indices.push_back(i + 1);
-        indices.push_back((i + 1) % slices + 1);
+    // Vertice centrale inferiore
+    vertices.push_back({0.0f, -halfHeight, 0.0f, 0.0f, -1.0f, 0.0f});
+    int bottomCenterIndex = vertices.size() - 1;
+
+    // Indici per i lati (triangoli in senso antiorario)
+    for (int i = 1; i <= slices; ++i) {
+        int next = (i % slices) + 1;
+        indices.push_back(topVertexIndex);
+        indices.push_back(next);
+        indices.push_back(i);
+    }
+
+    // Indici per la base inferiore (triangoli in senso antiorario)
+    for (int i = 1; i <= slices; ++i) {
+        int next = (i % slices) + 1;
+        indices.push_back(i);
+        indices.push_back(next);
+        indices.push_back(bottomCenterIndex);
     }
 }
 
@@ -191,35 +210,40 @@ void MakeSphere(float radius, int rings, int slices, std::vector<std::array<floa
 // HINT: the procedure below creates a circle. You have to change it, or you will obtain a wrong result
 // You should use two nested for loops, one used to span across the rings, and the other that spans along
 // the rings.
-	vertices.clear();
-    indices.clear();
+	for (int r = 0; r <= rings; ++r) {
+        float theta = r * M_PI / rings;
+        float sinTheta = sin(theta);
+        float cosTheta = cos(theta);
 
-    for (int i = 0; i <= rings; ++i) {
-        float phi = M_PI * i / rings;
-        for (int j = 0; j <= slices; ++j) {
-            float theta = 2 * M_PI * j / slices;
-            float x = radius * sin(phi) * cos(theta);
-            float y = radius * cos(phi);
-            float z = radius * sin(phi) * sin(theta);
-            float nx = x / radius;
-            float ny = y / radius;
-            float nz = z / radius;
-            vertices.push_back({x, y, z, nx, ny, nz});
+        for (int s = 0; s <= slices; ++s) {
+            float phi = s * 2 * M_PI / slices;
+            float sinPhi = sin(phi);
+            float cosPhi = cos(phi);
+
+            float x = cosPhi * sinTheta;
+            float y = cosTheta;
+            float z = sinPhi * sinTheta;
+
+            vertices.push_back({radius * x, radius * y, radius * z, x, y, z});
         }
     }
 
-    // Indices for triangles
-    for (int i = 0; i < rings; ++i) {
-        for (int j = 0; j < slices; ++j) {
-            int first = i * (slices + 1) + j;
+    for (int r = 0; r < rings; ++r) {
+        for (int s = 0; s < slices; ++s) {
+            int first = r * (slices + 1) + s;
             int second = first + slices + 1;
-            indices.push_back(first);
-            indices.push_back(first + 1);
-            indices.push_back(second);
 
-            indices.push_back(first + 1);
-            indices.push_back(second + 1);
-            indices.push_back(second);
+            if (r != 0) { // Evita il polo nord
+                indices.push_back(first);
+                indices.push_back(second);
+                indices.push_back(first + 1);
+            }
+
+            if (r != rings - 1) { // Evita il polo sud
+                indices.push_back(first + 1);
+                indices.push_back(second);
+                indices.push_back(second + 1);
+            }
         }
     }
 }
