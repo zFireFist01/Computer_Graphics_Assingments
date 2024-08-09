@@ -228,22 +228,19 @@ void MakeSphere(float radius, int rings, int slices, std::vector<std::array<floa
         }
     }
 
-    for (int r = 0; r < rings; ++r) {
-        for (int s = 0; s < slices; ++s) {
-            int first = r * (slices + 1) + s;
+    // Indices
+    for (int i = 0; i < rings; i++) {
+        for (int j = 0; j < slices; j++) {
+            int first = (i * (slices + 1)) + j;
             int second = first + slices + 1;
 
-            if (r != 0) { // Evita il polo nord
-                indices.push_back(first);
-                indices.push_back(second);
-                indices.push_back(first + 1);
-            }
+            indices.push_back(first);
+            indices.push_back(first + 1);
+            indices.push_back(second);
 
-            if (r != rings - 1) { // Evita il polo sud
-                indices.push_back(first + 1);
-                indices.push_back(second);
-                indices.push_back(second + 1);
-            }
+            indices.push_back(first + 1);
+            indices.push_back(second + 1);
+            indices.push_back(second);
         }
     }
 }
