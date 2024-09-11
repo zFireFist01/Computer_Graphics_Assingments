@@ -54,7 +54,7 @@ vec3 direct_light_color(vec3 pos, int i) {
 vec3 point_light_dir(vec3 pos, int i) {
 	// Point light - direction vector
 	// Position of the light in <gubo.lightPos[i]>
-	return normalize(gubo.lightDir[i] - pos);
+	return normalize(gubo.lightPos[i] - pos);
 }
 
 vec3 point_light_color(vec3 pos, int i) {
@@ -84,19 +84,12 @@ vec3 spot_light_color(vec3 pos, int i) {
 	// Direction of the light in <gubo.lightDir[i]>
 	// Cosine of half of the inner angle in <gubo.cosIn>
 	// Cosine of half of the outer angle in <gubo.cosOut>
-	 vec3 L = normalize(gubo.lightPos[i] - pos);
-    float cosAngle = dot(-L, normalize(gubo.lightDir[i]));
-
-    // Compute the falloff factor based on the spotlight inner and outer angles
-    float innerFalloff = smoothstep(gubo.cosOut, gubo.cosIn, cosAngle);
-    float outerFalloff = smoothstep(gubo.cosOut, gubo.cosIn, cosAngle);
-
-    // Compute attenuation based on distance
-    float distance = length(gubo.lightPos[i] - pos);
-    float attenuation = 1.0 / (1.0 + pow(distance, 2.0));
-
-    // Combine falloff and attenuation with light color
-    return gubo.lightColor[i].rgb * innerFalloff * attenuation * gubo.lightColor[i].a;
+	float g = gubo.lightColor[i].a;
+	vec3 dir = gubo.lightPos[i] - pos;
+	float d = length(dir);
+	float att = pow(g/d, 2.0);
+	float dim = max(min((dot(dir / d, normalize(gubo.lightDir[i])) - gubo.cosOut)/(gubo.cosIn - gubo.cosOut), 1.0), 0.0);
+	return gubo.lightColor[i].rgb * att * dim;
 }
 
 
