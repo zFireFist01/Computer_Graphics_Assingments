@@ -45,40 +45,83 @@ void SetProjections(A03 *A) {
  
 ***************/
 //	glm::mat4 M;
-	glm::mat4 M, G;
+	glm::mat4 M;
 
 	// Ortogonal Front
 	// this is the only one correct, and that should not be modified
-	M = glm::mat4(1.0f / 20.0f,0,0,0,  0,-4.0f / 60.f,0,0,   0,0,1.0f / (0.1f-500.0f),0, 0,0,0.1f / (0.1f-500.0f),1);
-	G = glm::mat4(1.0f / 20.0f,0,0,0,  0,-4.0f / 60.f,0,0,   0,0,1.0f / (-500.0f-500.0f),0, 0,0,0.1f / (-500.0f-500.0f),1);
+	M = glm::mat4(1.0f / 20.0f,0,0,0,  0,-4.0f / 60.f,0,0,   0,0,1.0f/(0.1f-500.0f),0, 0,0,0.1f/(0.1f-500.0f),1);
 	A->SetMatrix(0,  M);
 
 	// Isometric
-	M = glm::translate(glm::rotate(glm::rotate(G, glm::radians(35.26f), glm::vec3(1,0,0)), glm::radians(45.0f), glm::vec3(0,1,0)), glm::vec3(0, -11, 0));
+	M = glm::mat4(1.0f / 20.0f, 0, 0, 0,
+                  0, -4.0f / 60.0f, 0, 0,
+                  0, 0, 1.0f/(-500.0f-500.0f), 0,
+                  0, 0, -500.0f/(-500.0f-500.0f), 1)*
+        glm::mat4(1, 0, 0, 0,
+                  0, glm::cos(glm::radians(-35.26f)), -glm::sin(glm::radians(-35.26f)), 0,
+                  0, glm::sin(glm::radians(-35.26f)), glm::cos(glm::radians(-35.26f)), 0,
+                  0, 0, 0, 1) *
+        glm::mat4(glm::cos(glm::radians(-45.0f)), 0, -glm::sin(glm::radians(-45.0f)), 0,
+                  0, 1, 0, 0,
+                  glm::sin(glm::radians(-45.0f)), 0, glm::cos(glm::radians(-45.0f)), 0,
+                  0, 0, 0, 1);
 	A->SetMatrix(1,  M);
 
 	// Dimetric, with an angle of 20 degree
-	M = glm::translate(glm::rotate(glm::rotate(G, glm::radians(20.0f), glm::vec3(1,0,0)), glm::radians(45.0f), glm::vec3(0,1,0)), glm::vec3(0,-13, 0));
+	M = glm::mat4(1.0f / 20.0f, 0, 0, 0,
+                  0, -4.0f / 60.0f, 0, 0,
+                  0, 0, 1.0f/(-500.0f-500.0f), 0,
+                  0, 0, -500.0f/(-500.0f-500.0f), 1)*
+        glm::mat4(1, 0, 0, 0,
+                  0, glm::cos(glm::radians(-20.0f)), -glm::sin(glm::radians(-20.0f)), 0,
+                  0, glm::sin(glm::radians(-20.0f)), glm::cos(glm::radians(-20.0f)), 0,
+                  0, 0, 0, 1) *
+        glm::mat4(glm::cos(glm::radians(-45.0f)), 0, -glm::sin(glm::radians(-45.0f)), 0,
+                  0, 1, 0, 0,
+                  glm::sin(glm::radians(-45.0f)), 0, glm::cos(glm::radians(-45.0f)), 0,
+                  0, 0, 0, 1);
 	A->SetMatrix(2,  M);
 	
-	// Trimetric, with an angle of alpha of 30 degree, and beta of 60 degrees
-	M = glm::translate(glm::rotate(glm::rotate(G, glm::radians(30.0f), glm::vec3(1,0,0)), glm::radians(60.0f), glm::vec3(0,1,0)), glm::vec3(0, -13, 0));
+	// Trimetric, with an angle of alp35.26ha of 30 degree, and beta of 60 degrees
+	M = M = glm::mat4(1.0f / 20.0f, 0, 0, 0,
+                  0, -4.0f / 60.0f, 0, 0,
+                  0, 0, 1.0f/(-500.0f-500.0f), 0,
+                  0, 0, -500.0f/(-500.0f-500.0f), 1)*
+        glm::mat4(1, 0, 0, 0,
+                  0, glm::cos(glm::radians(-30.0f)), -glm::sin(glm::radians(-30.0f)), 0,
+                  0, glm::sin(glm::radians(-30.0f)), glm::cos(glm::radians(-30.0f)), 0,
+                  0, 0, 0, 1) *
+        glm::mat4(glm::cos(glm::radians(-60.0f)), 0, -glm::sin(glm::radians(-60.0f)), 0,
+                  0, 1, 0, 0,
+                  glm::sin(glm::radians(-60.0f)), 0, glm::cos(glm::radians(-60.0f)), 0,
+                  0, 0, 0, 1);
 	A->SetMatrix(3,  M);
 	
 	// Create a Cabinet projection, with the z axis at an angle of 45 degrees
-	M = glm::translate(glm::shearZ3D(G, -0.353f, -0.353f), glm::vec3(0, -13.5, 0));
+	M = glm::mat4(1.0f / 20.0f, 0, 0, 0,
+                  0, -4.0f / 60.0f, 0, 0,
+                  0, 0, 1.0f/(-500.0f-500.0f), 0,
+                  0, 0, -500.0f/(-500.0f-500.0f), 1)*
+        glm::mat4(1, 0, 0, 0,
+                  0, 1, 0, 0,
+                  glm::cos(glm::radians(-45.0f))/2, glm::sin(glm::radians(-45.0f))/2, 1, 0,
+                  0, 0, 0, 1);
 	A->SetMatrix(4,  M);
 	
 	// Create a perspective projection, with a Fov-y of  90 degrees
-	M = glm::scale(glm::perspective(glm::radians(90.0f), 4.0f / 3.0f, 1.0f, 500.0f), glm::vec3(1,-1,1));
+	M = glm::mat4(1.0f);
+    //M = glm::perspective(glm::radians(-90.0f), 4.0f/3.0f, 0.1f, 500.0f);
+    M = glm::mat4(1.0f / ((4.0f/3.0f) * glm::tan(glm::radians(90.0f/2.0f))), 0, 0, 0,  0, -1.0f / glm::tan(glm::radians(90.0f/2.0f)), 0, 0,  0, 0, 500.0f / (0.1f - 500.0f), -1.0f,  0, 0, (0.1f * 500.0f) / (0.1f - 500.0f), 0);
 	A->SetMatrix(5,  M);
 	
 	// Create a perspective projection, with a Fov-y of  30 degrees (zoom)
-	M = glm::scale(glm::perspective(glm::radians(30.0f), 4.0f / 3.0f, 1.0f, 500.0f), glm::vec3(1,-1,1));
+	M = glm::mat4(1.0f);
+    M = glm::mat4(1.0f / ((4.0f/3.0f) * glm::tan(glm::radians(30.0f/2.0f))), 0, 0, 0,  0, -1.0f / glm::tan(glm::radians(30.0f/2.0f)), 0, 0,  0, 0, 500.0f / (0.1f - 500.0f), -1.0f,  0, 0, (0.1f * 500.0f) / (0.1f - 500.0f), 0);
 	A->SetMatrix(6,  M);
 	
 	// Create a perspective projection, with a Fov-y of 120 degrees (wide)
-	M = glm::scale(glm::perspective(glm::radians(120.0f), 4.0f / 3.0f, 1.0f, 500.0f), glm::vec3(1,-1,1));
+	M = glm::mat4(1.0f);
+    M = glm::mat4(1.0f / ((4.0f/3.0f) * glm::tan(glm::radians(120.0f/2.0f))), 0, 0, 0,  0, -1.0f / glm::tan(glm::radians(120.0f/2.0f)), 0, 0,  0, 0, 500.0f / (0.1f - 500.0f), -1.0f,  0, 0, (0.1f * 500.0f) / (0.1f - 500.0f), 0);
 	A->SetMatrix(7,  M);
-
 }
+
